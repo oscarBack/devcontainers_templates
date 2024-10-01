@@ -1,2 +1,2 @@
 # devcontainers_templates
-Repository for devcontainer templates
+Repository for devcontainer templates + IaC capabilities

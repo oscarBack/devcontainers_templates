@@ -1,0 +1,5 @@
+{
+	"name": "Template React SPA + cloudflare",
+	"dockerFile": "Dockerfile.dev",
+	"postStartCommand": ".devcontainer/post-start.sh"
+}

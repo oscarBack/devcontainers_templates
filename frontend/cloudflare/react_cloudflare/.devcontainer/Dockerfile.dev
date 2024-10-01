@@ -1,0 +1,30 @@
+FROM mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm
+
+# Install OS packages and Homebrew in a single RUN command
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends make locales \
+    && localedef -i en_US -f UTF-8 en_US.UTF-8 \
+    && useradd -m -s /bin/bash linuxbrew \
+    && echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers \
+    && su - linuxbrew -c 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"' \
+    && chown -R linuxbrew:linuxbrew /home/linuxbrew/.linuxbrew \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set PATH for Homebrew
+ENV PATH="/home/linuxbrew/.linuxbrew/bin:${PATH}"
+
+# Install CF-Terraform as linuxbrew user
+USER linuxbrew
+RUN brew update && brew tap cloudflare/cloudflare && brew install cloudflare/cloudflare/cf-terraforming
+
+# Install node version as node user
+USER node
+RUN export NVM_DIR="/usr/local/share/nvm" \
+    && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
+    && [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" \
+    && nvm install 22.4 && nvm use 22.4
+
+# Clean up unnecessary files
+USER root
+RUN apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*
